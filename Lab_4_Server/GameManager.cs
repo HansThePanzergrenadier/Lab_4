@@ -67,6 +67,7 @@ namespace Lab_4
 
             ReadControls(cup);
             cup.OnTick();
+            SendData(cup);
             while (timer.ElapsedMilliseconds < tickTime) ;
             timer.Stop();
         }
@@ -101,6 +102,13 @@ namespace Lab_4
         public void SendWin(Player winner)
         {
             //notify winner that he is winner 
+        }
+
+        public void SendData(PetriCup cup)
+        {
+            //use cup.GetNearEntities(player) to get a list of objects to inform player about
+            //send player position (player.X, player.Y), size (Player.Size), position and size of each object from the list
+            //all data is sent to each player from cup.Players
         }
     }
 }
