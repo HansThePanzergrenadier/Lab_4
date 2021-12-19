@@ -8,16 +8,47 @@ namespace Lab_4
 {
     class Player
     {
+
+        public int ID;
         public string Nickname;
         public Goo Character;
-        //connection variables
+        public int Kills;
+        public bool Forward, Backward, Right, Left;
+        //put here some connection variables
 
-        public Player(string Nickname)
+        public Player(int ID, string Nickname)
         {
             this.Nickname = Nickname;
-
+            this.ID = ID;
+            Kills = 0;
+            Forward = false;
+            Backward = false;
+            Right = false;
+            Left = false;
         }
 
+        public Player(int ID, string Nickname, Goo Character)
+        {
+            this.Nickname = Nickname;
+            this.ID = ID;
+            this.Character = Character;
+            Kills = 0;
+            Forward = false;
+            Backward = false;
+            Right = false;
+            Left = false;
+        }
 
+        public void SetControls(bool Forward, bool Backward, bool Right, bool Left)
+        {
+            this.Forward = Forward;
+            this.Backward = Backward;
+            this.Right = Right;
+            this.Left = Left;
+            if (Character != null)
+            {
+                Character.SetIncrements();
+            }
+        }
     }
 }

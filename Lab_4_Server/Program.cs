@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Input;
 
 namespace Lab_4
 {
@@ -6,7 +7,11 @@ namespace Lab_4
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            GameManager gm = new GameManager(5, 10000, 50, 3000, 5, 5);
+            while (true)
+            {
+                gm.BigCycle();
+            }
         }
     }
 }
