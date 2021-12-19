@@ -48,7 +48,7 @@ namespace Lab_4
             {
                 SendScore(el);
             }
-            
+            SendWin(round);
             while (timer.ElapsedMilliseconds < 5000) ;
             timer.Stop();
 
@@ -99,9 +99,9 @@ namespace Lab_4
             //read controls from clients and call Player.SetControls() for each player from cup.Players list
         }
 
-        public void SendWin(Player winner)
+        public void SendWin(PetriCup cup)
         {
-            //notify winner that he is winner 
+            //notify winner that he is winner. winner is "cup.GetLive()[0]"
         }
 
         public void SendData(PetriCup cup)
