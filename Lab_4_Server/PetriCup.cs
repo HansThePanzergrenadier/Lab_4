@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace Lab_4
 {
     class PetriCup
     {
-        int GooInitSize;
+        private int GooInitSize;
         public int Size;
-        int ViewRadius;
-        int EatingSpeed;
-        int MovingSpeed;
+        private int ViewRadius;
+        private int EatingSpeed;
+        private int MovingSpeed;
 
         //List<Goo> Goos = new List<Goo>();
         public List<Player> Players;
@@ -121,7 +122,8 @@ namespace Lab_4
                 for (int i = 0; i < Players.Count; i++)
                 {
                     Player el = Players[i];
-                    el.Character = new Goo(id, el, rnd.Next(0, Size), rnd.Next(0, Size), GooInitSize, 5);
+                    Color c = Color.FromArgb(rnd.Next(int.MaxValue));
+                    el.Character = new Goo(id, el, rnd.Next(0, Size), rnd.Next(0, Size), GooInitSize, 5, c);
                     el.Character.Master = el;
                     id++;
                 }
@@ -137,8 +139,6 @@ namespace Lab_4
                     if (Players[i].Character.Size <= 0)
                     {
                         Players[i].Character = null;
-                        //signal player about losing...
-
                     }
                 }
             }
@@ -198,7 +198,8 @@ namespace Lab_4
             Player p = new Player(Players.Count, nickname);
             Players.Add(p);
             Random rnd = new Random();
-            Goo g = new Goo(GetAllEntities().Count, p, rnd.Next(Size), rnd.Next(Size), GooInitSize, MovingSpeed);
+            Color c = Color.FromArgb(rnd.Next(int.MaxValue));
+            Goo g = new Goo(GetAllEntities().Count, p, rnd.Next(Size), rnd.Next(Size), GooInitSize, MovingSpeed, c);
             p.Character = g;
         }
 

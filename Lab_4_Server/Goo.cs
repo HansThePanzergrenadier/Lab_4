@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace Lab_4
 {
@@ -12,7 +13,7 @@ namespace Lab_4
         public Player Master;
         public List<Entity> Eating = new List<Entity>();
 
-        public Goo(int ID, Player Master, int X, int Y, int Size, int Speed)
+        public Goo(int ID, Player Master, int X, int Y, int Size, int Speed, Color Color)
         {
             this.ID = ID;
             this.Master = Master;
@@ -20,11 +21,12 @@ namespace Lab_4
             this.Y = Y;
             this.Size = Size;
             this.Speed = Speed;
+            this.Color = Color;
         }
         /*
         public int GetSpeed()
         {
-
+            //auto adjustable speed?...
         }
         */
         public void SetIncrements()

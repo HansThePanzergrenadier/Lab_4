@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lab_4
 {
-    class Player
+    class Player : IComparer<Player>
     {
 
         public int ID;
@@ -37,6 +37,11 @@ namespace Lab_4
             Backward = false;
             Right = false;
             Left = false;
+        }
+
+        public int Compare(Player x, Player y)
+        {
+            return x.Character.Size - y.Character.Size;
         }
 
         public void SetControls(bool Forward, bool Backward, bool Right, bool Left)

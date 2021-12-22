@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Drawing;
 
 namespace Lab_4
 {
@@ -11,7 +8,7 @@ namespace Lab_4
         public int ID;
         public int X, Y;
         public int Size;
-        //public bool Dead;
+        public Color Color;
 
         public bool CheckCollision(Entity Other)
         {

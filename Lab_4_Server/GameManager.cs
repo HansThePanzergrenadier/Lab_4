@@ -10,6 +10,7 @@ namespace Lab_4
     class GameManager
     {
         List<Player> room = new List<Player>();
+        
 
         public int tickTime;
         public int fieldSize;
@@ -107,7 +108,7 @@ namespace Lab_4
         public void SendData(PetriCup cup)
         {
             //use cup.GetNearEntities(player) to get a list of objects to inform player about
-            //send player position (player.X, player.Y), size (Player.Size), position and size of each object from the list
+            //send player position (player.X, player.Y), size (Player.Size), color; position, size and color of each entity from the list
             //all data is sent to each player from cup.Players
         }
     }
