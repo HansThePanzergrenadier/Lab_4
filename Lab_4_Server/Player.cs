@@ -1,58 +1,53 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lab_4
 {
-    class Player : IComparer<Player>
+    class Player : IComparable
     {
-
-        public int ID;
-        public string Nickname;
+        public string Name;
         public Goo Character;
-        public int Kills;
-        public bool Forward, Backward, Right, Left;
-        //put here some connection variables
 
-        public Player(int ID, string Nickname)
+        public Player(string name, Goo character)
         {
-            this.Nickname = Nickname;
-            this.ID = ID;
-            Kills = 0;
-            Forward = false;
-            Backward = false;
-            Right = false;
-            Left = false;
+            Name = name;
+            Character = character;
         }
 
-        public Player(int ID, string Nickname, Goo Character)
+        public int CompareTo(object obj)
         {
-            this.Nickname = Nickname;
-            this.ID = ID;
-            this.Character = Character;
-            Kills = 0;
-            Forward = false;
-            Backward = false;
-            Right = false;
-            Left = false;
-        }
-
-        public int Compare(Player x, Player y)
-        {
-            return x.Character.Size - y.Character.Size;
-        }
-
-        public void SetControls(bool Forward, bool Backward, bool Right, bool Left)
-        {
-            this.Forward = Forward;
-            this.Backward = Backward;
-            this.Right = Right;
-            this.Left = Left;
-            if (Character != null)
+            if (obj == null)
             {
-                Character.SetIncrements();
+                return 1;
+            }
+
+            Player otherPlayer = obj as Player;
+
+            if (otherPlayer != null)
+            {
+                return Character.CompareTo(otherPlayer.Character);
+            }
+            else
+            {
+                throw new ArgumentException("Object is not a Player");
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                Player p = (Player)obj;
+
+                return Name.Equals(p.Name) && Character.Id.Equals(p.Character.Id);
             }
         }
     }

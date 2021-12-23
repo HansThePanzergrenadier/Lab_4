@@ -1,26 +1,40 @@
 ﻿using System;
 using System.Drawing;
+using System.Numerics;
 
 namespace Lab_4
 {
     abstract class Entity
     {
-        public int ID;
-        public int X, Y;
-        public int Size;
-        public Color Color;
+        public int Id { get; }
+        public Vector2 Position { get; set; }
+        public int Radius { get; set; }
+        public Color Color { get; set; }
 
-        public bool CheckCollision(Entity Other)
+        public Entity(int id, Vector2 position, int radius, Color color)
         {
-            double distanceBetweenCenters = Math.Sqrt((X - Other.X) ^ 2 + (Y - Other.Y) ^ 2);
-            double thresholdOfContact = Size + Other.Size;
+            Id = id;
+            Position = position;
+            Radius = radius;
+            Color = color;
+        }
+
+        public bool IsEaten()
+        {
+            return Radius <= 0;
+        }
+
+        public bool HasContact(Entity other)
+        {
+            double distanceBetweenCenters = GetDistanceBetweenCenters(other);
+            double thresholdOfContact = Radius + other.Radius;
+
             return distanceBetweenCenters <= thresholdOfContact;
         }
 
-        public bool IsInbound(int radius, Entity other)
+        public double GetDistanceBetweenCenters(Entity other)
         {
-            double distanceBetweenCenters = Math.Sqrt((X - other.X) ^ 2 + (Y - other.Y) ^ 2);
-            return distanceBetweenCenters < radius;
+            return Math.Sqrt(Math.Pow(Position.X - other.Position.X, 2) + Math.Pow(Position.Y - other.Position.Y, 2));
         }
     }
 }

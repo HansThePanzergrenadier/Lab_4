@@ -1,97 +1,60 @@
-﻿
-
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Drawing;
+using System.Numerics;
 
 namespace Lab_4
 {
-    class Goo : Entity
+    class Goo : Entity, IComparable
     {
-        public int Speed;
-        public int XInc = 0, YInc = 0;
-        public Player Master;
-        public List<Entity> Eating = new List<Entity>();
+        private static int INIT_RADIUS = 100;
 
-        public Goo(int ID, Player Master, int X, int Y, int Size, int Speed, Color Color)
+        public int Speed { get; }
+        public int EatingSpeed { get; }
+        public int ViewingRadius { get; }
+
+        public Goo(int id, Vector2 position, Color color) : base(id, position, INIT_RADIUS, color)
         {
-            this.ID = ID;
-            this.Master = Master;
-            this.X = X;
-            this.Y = Y;
-            this.Size = Size;
-            this.Speed = Speed;
-            this.Color = Color;
+            Speed = 5;
+            EatingSpeed = 5;
         }
-        /*
-        public int GetSpeed()
+
+        public bool CanSee(Entity other)
         {
-            //auto adjustable speed?...
+            double distanceBetweenCenters = GetDistanceBetweenCenters(other);
+
+            return distanceBetweenCenters < ViewingRadius;
         }
-        */
-        public void SetIncrements()
+
+        public void Eat(Entity other)
         {
-            if (Master.Forward && !Master.Backward)
+            if (other.Radius >= EatingSpeed)
             {
-                YInc = Speed;
-            }
-            else if (!Master.Forward && Master.Backward)
-            {
-                YInc -= Speed;
+                Radius += EatingSpeed;
+                other.Radius -= EatingSpeed;
             }
             else
             {
-                YInc = 0;
+                Radius += other.Radius;
+                other.Radius = 0;
+            }
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj == null)
+            {
+                return 1;
             }
 
-            if (Master.Right && !Master.Left)
+            Goo otherGoo = obj as Goo;
+
+            if (otherGoo != null)
             {
-                XInc = Speed;
-            }
-            else if (!Master.Right && Master.Left)
-            {
-                XInc -= Speed;
+                return this.Radius.CompareTo(otherGoo.Radius);
             }
             else
             {
-                XInc = 0;
-            }
-        }
-
-        public void Go(PetriCup map)
-        {
-            if (X + XInc > 0 && X + XInc < map.Size)
-            {
-                X += XInc;
-            }
-            if (Y + YInc > 0 && Y + YInc < map.Size)
-            {
-                Y += YInc;
-            }
-        }
-
-        public void Eat(int eatingSpeed)
-        {
-            foreach (Entity el in Eating)
-            {
-                Size += eatingSpeed;
-                el.Size -= eatingSpeed;
-            }
-        }
-
-        public void StartEat(Entity Other)
-        {
-            if (!Eating.Contains(Other))
-            {
-                Eating.Add(Other);
-            }
-        }
-
-        public void StopEat(Entity Other)
-        {
-            if (Eating.Contains(Other))
-            {
-                Eating.Remove(Other);
+                throw new ArgumentException("Object is not a Goo");
             }
         }
     }

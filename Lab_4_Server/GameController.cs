@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lab_4
 {
-    class GameManager
+    class GameController
     {
         List<Player> room = new List<Player>();
         
@@ -19,7 +19,7 @@ namespace Lab_4
         public int movingSpeed;
         public int eatingSpeed;
 
-        public GameManager(int tickTime, int fieldSize, int initGooSize, int viewRadius, int movingSpeed, int eatingSpeed)
+        public GameController(int tickTime, int fieldSize, int initGooSize, int viewRadius, int movingSpeed, int eatingSpeed)
         {
             this.tickTime = tickTime;
             this.fieldSize = fieldSize;
@@ -35,10 +35,10 @@ namespace Lab_4
             {
                 GetNewbies(room);
             }
-            PetriCup round = new PetriCup(fieldSize, room, initGooSize, viewRadius, movingSpeed, eatingSpeed);
-            round.SetRound(20, 5);
+            PetriCup round = new PetriCup(fieldSize);
+            round.CreateFoods(20);
 
-            while (round.GetLive().Count > 1)
+            while (round.GetLivePlayers().Count > 1)
             {
                 SmallCycle(round);
             }
@@ -67,12 +67,18 @@ namespace Lab_4
             //check connection and remove disconnected players from room list?...
 
             ReadControls(cup);
-            cup.OnTick();
+            OnTick();
             SendData(cup);
             while (timer.ElapsedMilliseconds < tickTime) ;
             timer.Stop();
         }
-                
+
+
+        public void OnTick()
+        {
+
+        }
+
         public void PutNewbies(PetriCup cup)
         {
             //here must be a code which takes incoming join requests and calls cup.AddPlayer(string Nickname) for each. Nickname is a data recieved from client.

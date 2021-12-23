@@ -1,19 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Drawing;
+using System.Numerics;
 
 namespace Lab_4
 {
     class Food : Entity
     {
-        public Food(int ID, int X, int Y, int Size)
+        private static int MAX_RADIUS = 100;
+        private static Color COLOR = Color.FromArgb(80, 215, 190, 100);
+
+        public Food(int id, Vector2 position, int radius) : base(id, position, radius, COLOR)
         {
-            this.ID = ID;
-            this.X = X;
-            this.Y = Y;
-            this.Size = Size;
+
+        }
+
+        public static int GenerateRandomRadius()
+        {
+            return new Random().Next(1, MAX_RADIUS);
         }
     }
 }

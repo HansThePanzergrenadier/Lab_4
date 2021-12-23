@@ -7,7 +7,8 @@ namespace Lab_4
     {
         static void Main(string[] args)
         {
-            GameManager gm = new GameManager(5, 10000, 50, 3000, 5, 5);
+            GameController gm = new GameController(5, 10000, 50, 3000, 5, 5);
+
             while (true)
             {
                 gm.BigCycle();

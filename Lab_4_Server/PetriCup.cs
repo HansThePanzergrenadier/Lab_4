@@ -1,214 +1,155 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Numerics;
 
 namespace Lab_4
 {
     class PetriCup
     {
-        private int GooInitSize;
-        public int Size;
-        private int ViewRadius;
-        private int EatingSpeed;
-        private int MovingSpeed;
+        public int Size { get; }
 
-        //List<Goo> Goos = new List<Goo>();
-        public List<Player> Players;
-        List<Food> Foods = new List<Food>();
-        //List<Entity> Dying = new List<Entity>();
-        //List<Entity> Eating = new List<Entity>();
-        //List<Goo> DeadGoos = new List<Goo>();
-        //List<Goo> LiveGoos = new List<Goo>();
+        public List<Player> Players { get; }
+        List<Food> Foods { get; }
 
-        public PetriCup(int Size, List<Player> Players, int GooInitSize, int ViewRadius, int EatingSpeed, int MovingSpeed)
+        public PetriCup(int size)
         {
-            this.Size = Size;
-            this.Players = Players;
-            this.GooInitSize = GooInitSize;
-            this.ViewRadius = ViewRadius;
-            this.EatingSpeed = EatingSpeed;
-            this.MovingSpeed = MovingSpeed;
+            Size = size;
+            Players = new List<Player>();
+            Foods = new List<Food>();
         }
 
-        public void SetEating()
-        {
-            //checking players
-            foreach (var a in Players)
-            {
-                if (a.Character != null)
-                {
-                    List<Player> others = new List<Player>(Players);
-                    others.Remove(a);
-                    foreach (var b in others)
-                    {
-                        if (b.Character != null)
-                        {
-                            if (a.Character.CheckCollision(b.Character))
-                            {
-                                if (a.Character.Size > b.Character.Size)
-                                {
-                                    a.Character.StartEat(b.Character);
-                                    b.Character.StopEat(a.Character);
-                                }
-                                else if (a.Character.Size < b.Character.Size)
-                                {
-                                    b.Character.StartEat(a.Character);
-                                    a.Character.StopEat(b.Character);
-                                }
-                                else
-                                {
-                                    a.Character.StopEat(b.Character);
-                                    b.Character.StopEat(a.Character);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            //checking food
-            foreach (var a in Players)
-            {
-                if (a.Character != null)
-                {
-                    foreach (var b in Foods)
-                    {
-                        if (a.Character.CheckCollision(b))
-                        {
-                            a.Character.StartEat(b);
-                        }
-                    }
-                }
-            }
-        }
-
-        public void MoveAll()
-        {
-            foreach (var el in Players)
-            {
-                if (el.Character != null)
-                {
-                    el.Character.Go(this);
-                }
-            }
-        }
-
-        public void EatAll()
-        {
-            foreach (var el in Players)
-            {
-                if (el.Character != null)
-                {
-                    el.Character.Eat(EatingSpeed);
-                }
-            }
-        }
-
-        public void SetRound(int foodMaxSize, int foodPercentage)
-        {
-            if (Players.Count >= 2)
-            {
-                //setting food
-                int foodTotal = ((Size ^ 2) / 100) * foodPercentage;
-                Random rnd = new Random();
-                int id = 0;
-                while (foodTotal > 0)
-                {
-                    int foodSize = rnd.Next(1, foodMaxSize);
-                    foodTotal -= foodSize;
-                    Foods.Add(new Food(id, rnd.Next(0, Size), rnd.Next(0, Size), foodSize));
-                    id++;
-                }
-                //setting players
-                for (int i = 0; i < Players.Count; i++)
-                {
-                    Player el = Players[i];
-                    Color c = Color.FromArgb(rnd.Next(int.MaxValue));
-                    el.Character = new Goo(id, el, rnd.Next(0, Size), rnd.Next(0, Size), GooInitSize, 5, c);
-                    el.Character.Master = el;
-                    id++;
-                }
-            }
-        }
-
-        public void CheckDeaths()
+        public void CheckAllContact()
         {
             for (int i = 0; i < Players.Count; i++)
             {
-                if (Players[i].Character != null)
+                Goo firstGoo = Players[i].Character;
+
+                if (firstGoo.IsEaten())
                 {
-                    if (Players[i].Character.Size <= 0)
+                    continue;
+                }
+
+                for (int j = 0; j < Foods.Count; j++)
+                {
+                    Food food = Foods[j];
+
+                    if (food.IsEaten())
                     {
-                        Players[i].Character = null;
+                        Foods.RemoveAt(j);
+
+                        continue;
+                    }
+
+                    if (firstGoo.HasContact(food))
+                    {
+                        firstGoo.Eat(food);
                     }
                 }
-            }
 
-            for (int i = 0; i < Foods.Count; i++)
-            {
-                if (Foods[i].Size <= 0)
+                for (int j = 0; j < Players.Count; j++)
                 {
-                    Foods.Remove(Foods[i]);
+                    Goo secondGoo = Players[j].Character;
+
+                    if (secondGoo.IsEaten() || firstGoo.Equals(secondGoo))
+                    {
+                        continue;
+                    }
+
+                    if (firstGoo.HasContact(secondGoo))
+                    {
+                        if (firstGoo.CompareTo(secondGoo) > 0)
+                        {
+                            firstGoo.Eat(secondGoo);
+                        }
+                        else if (firstGoo.CompareTo(secondGoo) < 0)
+                        {
+                            secondGoo.Eat(firstGoo);
+                        }
+                    }
                 }
             }
         }
 
-        public List<Player> GetLive()
+        public void MovePlayer(Player player, MoveCommand moveCommand)
         {
-            List<Player> result = new List<Player>();
-            foreach (var el in Players)
+            Goo goo = player.Character;
+
+            goo.Position = new Vector2(goo.Position.X, Math.Max(0, goo.Position.Y - (moveCommand.Up ? goo.Speed : 0)));
+            goo.Position = new Vector2(goo.Position.X, Math.Min(Size, goo.Position.Y + (moveCommand.Down ? goo.Speed : 0)));
+            goo.Position = new Vector2(Math.Max(0, goo.Position.Y - (moveCommand.Left ? goo.Speed : 0)), goo.Position.Y);
+            goo.Position = new Vector2(Math.Min(Size, goo.Position.Y + (moveCommand.Right ? goo.Speed : 0)), goo.Position.Y);
+        }
+
+        public void CreateFoods(int foodPercentage)
+        {
+            Random random = new Random();
+
+            int foodTotal = ((Size ^ 2) / 100) * foodPercentage;
+
+            while (foodTotal > 0)
             {
-                if (el.Character != null)
+                int foodSize = Food.GenerateRandomRadius();
+                Vector2 position = new Vector2(random.Next(0, Size), random.Next(0, Size));
+                Foods.Add(new Food(Foods.Count, position, foodSize));
+                foodTotal -= foodSize;
+            }
+        }
+
+        public List<Player> GetLivePlayers()
+        {
+            List<Player> livePlayers = new List<Player>();
+
+            foreach (Player player in Players)
+            {
+                if (!player.Character.IsEaten())
                 {
-                    result.Add(el);
+                    livePlayers.Add(player);
                 }
             }
-            return result;
+
+            return livePlayers;
         }
 
         public List<Entity> GetAllEntities()
         {
-            List<Entity> result = new List<Entity>();
-            foreach (var el in Players)
+            List<Entity> allEntities = new List<Entity>();
+
+            foreach (var player in Players)
             {
-                if (el.Character != null)
-                {
-                    result.Add(el.Character);
-                }
+                allEntities.Add(player.Character);
             }
-            result.AddRange(Foods);
-            return result;
+            allEntities.AddRange(Foods);
+
+            return allEntities;
         }
 
-        //use this method to get data about near objects
         public List<Entity> GetNearEntities(Player player)
         {
-            List<Entity> near = new List<Entity>();
-            foreach (var el in GetAllEntities())
+            List<Entity> nearEntities = new List<Entity>();
+            List<Entity> allEntities = GetAllEntities();
+
+            foreach (Entity entity in allEntities)
             {
-                if (player.Character.IsInbound(ViewRadius, el))
+                if (player.Character.CanSee(entity))
                 {
-                    near.Add(el);
+                    nearEntities.Add(entity);
                 }
             }
-            return near;
+
+            return nearEntities;
         }
 
-        public void AddPlayer(string nickname)
+        public void AddPlayer(string name)
         {
-            Player p = new Player(Players.Count, nickname);
-            Players.Add(p);
-            Random rnd = new Random();
-            Color c = Color.FromArgb(rnd.Next(int.MaxValue));
-            Goo g = new Goo(GetAllEntities().Count, p, rnd.Next(Size), rnd.Next(Size), GooInitSize, MovingSpeed, c);
-            p.Character = g;
-        }
+            Random random = new Random();
 
-        public void OnTick()
-        {
-            MoveAll();
-            SetEating();
-            EatAll();
-            CheckDeaths();
+            Vector2 position = new Vector2(random.Next(0, Size), random.Next(0, Size));
+            Color color = Color.FromArgb(random.Next(0, 15) * 15, random.Next(0, 15) * 15, random.Next(0, 15) * 15, random.Next(0, 15) * 15);
+            Goo goo = new Goo(Players.Count, position, color);
+            Player player = new Player(name, goo);
+
+            Players.Add(player);
         }
     }
 }
