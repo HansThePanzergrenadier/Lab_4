@@ -1,19 +1,23 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Drawing;
 using System.Numerics;
 
-namespace Lab_4
+namespace MyAgarIoServer
 {
     abstract class Entity
     {
-        public int Id { get; }
+        [JsonProperty("pos")]
         public Vector2 Position { get; set; }
+
+        [JsonProperty("r")]
         public int Radius { get; set; }
+
+        [JsonProperty("color")]
         public Color Color { get; set; }
 
-        public Entity(int id, Vector2 position, int radius, Color color)
+        public Entity(Vector2 position, int radius, Color color)
         {
-            Id = id;
             Position = position;
             Radius = radius;
             Color = color;

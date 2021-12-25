@@ -1,29 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Numerics;
+﻿using System.Collections.Generic;
 
-namespace Lab_4
+namespace MyAgarIoServer
 {
-    class PetriCup
+    class Round
     {
-        public int Size { get; }
-
+        public RoundState RoundState { get; set; }
+        public PetriCup PetriCup { get; }
         public List<Player> Players { get; }
-        List<Food> Foods { get; }
+        public List<Food> Foods { get; }
 
-        public PetriCup(int size)
+        public Round(PetriCup petriCup, List<Player> players)
         {
-            Size = size;
-            Players = new List<Player>();
-            Foods = new List<Food>();
+            PetriCup = petriCup;
+
+            Players = players;
+            ResetPlayers();
+
+            Foods = CreateFoods(30);
+
+            RoundState = RoundState.WAITING;
+        }
+
+        public List<Food> CreateFoods(int foodPercentage)
+        {
+            List<Food> foods = new List<Food>();
+
+            int foodTotal = ((PetriCup.Radius ^ 2) / 100) * foodPercentage;
+
+            while (foodTotal > 0)
+            {
+                Food food = Food.Create(PetriCup);
+                foods.Add(food);
+                foodTotal -= food.Radius;
+            }
+
+            return foods;
+        }
+
+        public void ResetPlayers()
+        {
+            for (int i = 0; i < Players.Count; i++)
+            {
+                Players[i].Goo.Reset(PetriCup);
+            }
+        }
+
+        public void ApplyAllMoves()
+        {
+            for (int i = 0; i < Players.Count; i++)
+            {
+                Players[i].Goo.ApplyMove(PetriCup);
+            }
         }
 
         public void CheckAllContact()
         {
             for (int i = 0; i < Players.Count; i++)
             {
-                Goo firstGoo = Players[i].Character;
+                Goo firstGoo = Players[i].Goo;
 
                 if (firstGoo.IsEaten())
                 {
@@ -47,9 +81,9 @@ namespace Lab_4
                     }
                 }
 
-                for (int j = 0; j < Players.Count; j++)
+                for (int j = i; j < Players.Count; j++)
                 {
-                    Goo secondGoo = Players[j].Character;
+                    Goo secondGoo = Players[j].Goo;
 
                     if (secondGoo.IsEaten() || firstGoo.Equals(secondGoo))
                     {
@@ -71,38 +105,13 @@ namespace Lab_4
             }
         }
 
-        public void MovePlayer(Player player, MoveCommand moveCommand)
-        {
-            Goo goo = player.Character;
-
-            goo.Position = new Vector2(goo.Position.X, Math.Max(0, goo.Position.Y - (moveCommand.Up ? goo.Speed : 0)));
-            goo.Position = new Vector2(goo.Position.X, Math.Min(Size, goo.Position.Y + (moveCommand.Down ? goo.Speed : 0)));
-            goo.Position = new Vector2(Math.Max(0, goo.Position.Y - (moveCommand.Left ? goo.Speed : 0)), goo.Position.Y);
-            goo.Position = new Vector2(Math.Min(Size, goo.Position.Y + (moveCommand.Right ? goo.Speed : 0)), goo.Position.Y);
-        }
-
-        public void CreateFoods(int foodPercentage)
-        {
-            Random random = new Random();
-
-            int foodTotal = ((Size ^ 2) / 100) * foodPercentage;
-
-            while (foodTotal > 0)
-            {
-                int foodSize = Food.GenerateRandomRadius();
-                Vector2 position = new Vector2(random.Next(0, Size), random.Next(0, Size));
-                Foods.Add(new Food(Foods.Count, position, foodSize));
-                foodTotal -= foodSize;
-            }
-        }
-
         public List<Player> GetLivePlayers()
         {
             List<Player> livePlayers = new List<Player>();
 
             foreach (Player player in Players)
             {
-                if (!player.Character.IsEaten())
+                if (!player.Goo.IsEaten())
                 {
                     livePlayers.Add(player);
                 }
@@ -117,7 +126,7 @@ namespace Lab_4
 
             foreach (var player in Players)
             {
-                allEntities.Add(player.Character);
+                allEntities.Add(player.Goo);
             }
             allEntities.AddRange(Foods);
 
@@ -131,25 +140,13 @@ namespace Lab_4
 
             foreach (Entity entity in allEntities)
             {
-                if (player.Character.CanSee(entity))
+                if (player.Goo.CanSee(entity) && !player.Goo.Equals(entity))
                 {
                     nearEntities.Add(entity);
                 }
             }
 
             return nearEntities;
-        }
-
-        public void AddPlayer(string name)
-        {
-            Random random = new Random();
-
-            Vector2 position = new Vector2(random.Next(0, Size), random.Next(0, Size));
-            Color color = Color.FromArgb(random.Next(0, 15) * 15, random.Next(0, 15) * 15, random.Next(0, 15) * 15, random.Next(0, 15) * 15);
-            Goo goo = new Goo(Players.Count, position, color);
-            Player player = new Player(name, goo);
-
-            Players.Add(player);
         }
     }
 }

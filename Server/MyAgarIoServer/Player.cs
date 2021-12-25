@@ -1,16 +1,30 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Diagnostics;
+using System.Net;
 
-namespace Lab_4
+namespace MyAgarIoServer
 {
     class Player : IComparable
     {
-        public string Name;
-        public Goo Character;
+        [JsonIgnore]
+        public EndPoint EndPoint { get; }
 
-        public Player(string name, Goo character)
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonIgnore]
+        public Goo Goo { get; set; }
+
+        [JsonIgnore]
+        public Stopwatch LastRequestTimer { get; }
+
+        public Player(EndPoint endPoint, string name, Goo goo)
         {
+            EndPoint = endPoint;
             Name = name;
-            Character = character;
+            Goo = goo;
+            LastRequestTimer = new Stopwatch();
         }
 
         public int CompareTo(object obj)
@@ -24,7 +38,7 @@ namespace Lab_4
 
             if (otherPlayer != null)
             {
-                return Character.CompareTo(otherPlayer.Character);
+                return Goo.CompareTo(otherPlayer.Goo);
             }
             else
             {
@@ -47,7 +61,7 @@ namespace Lab_4
             {
                 Player p = (Player)obj;
 
-                return Name.Equals(p.Name) && Character.Id.Equals(p.Character.Id);
+                return EndPoint.Equals(p.EndPoint) && Name.Equals(p.Name);
             }
         }
     }
