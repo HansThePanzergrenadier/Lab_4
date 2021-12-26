@@ -65,6 +65,8 @@ namespace MyAgarIoServer
                             }
                             break;
                     }
+
+                    gameController.CurrentRound.Players.Find(p => p.EndPoint.Equals(clientEndPoint)).LastRequestTimer.Restart();
                 }
                 catch (Exception ex)
                 {
