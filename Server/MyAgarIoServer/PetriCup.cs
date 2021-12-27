@@ -7,25 +7,21 @@ namespace MyAgarIoServer
 {
     class PetriCup
     {
-        [JsonProperty("pos")]
-        public Vector2 Position { get; set; }
-
-        [JsonProperty("r")]
-        public int Radius { get; set; }
+        [JsonProperty("size")]
+        public int Size { get; set; }
 
         [JsonProperty("color")]
         public Color Color { get; }
 
-        public PetriCup(int radius = 1000)
+        public PetriCup(int size = 5000)
         {
-            Position = new Vector2(radius, radius);
-            Radius = radius;
+            Size = size;
             Color = Color.FromArgb(100, 242, 242, 242);
         }
 
-        public bool IsInCup(Vector2 position, int radius)
+        public bool IsInCup(float x, float y)
         {
-            return Math.Sqrt(Math.Pow(position.X - Position.X, 2) + Math.Pow(position.Y - Position.Y, 2)) + radius >= Radius;
+            return x >= -Size / 2 && x <= Size / 2 && y >= -Size / 2 && y <= Size / 2;
         }
     }
 }

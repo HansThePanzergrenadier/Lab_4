@@ -25,7 +25,7 @@ namespace MyAgarIoServer
         {
             List<Food> foods = new List<Food>();
 
-            int foodTotal = ((PetriCup.Radius ^ 2) / 100) * foodPercentage;
+            int foodTotal = ((PetriCup.Size ^ 2) / 100) * foodPercentage;
 
             while (foodTotal > 0)
             {

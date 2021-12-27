@@ -30,7 +30,7 @@ namespace MyAgarIoServer
             PetriCup petriCup = new PetriCup();
             CurrentRound = new Round(petriCup, Players);
 
-            while (Players.Count < 2) ;
+            while (Players.Count < 1) ;
 
             CurrentRound.RoundState = RoundState.RUNNING;
             Console.WriteLine("Start round");
@@ -38,17 +38,19 @@ namespace MyAgarIoServer
             Stopwatch timer = new Stopwatch();
             timer.Start();
 
-            while (timer.ElapsedMilliseconds < RoundDurationMs && CurrentRound.GetLivePlayers().Count > 1)
+            while (timer.ElapsedMilliseconds < RoundDurationMs && CurrentRound.GetLivePlayers().Count > 0)
             {
                 CurrentRound.ApplyAllMoves();
                 CurrentRound.CheckAllContact();
                 for (int i = 0; i < Players.Count; i++)
                 {
+                    /*
                     if (Players[i].LastRequestTimer.ElapsedMilliseconds > 15000)
                     {
                         Players.RemoveAt(i);
                         continue;
                     }
+                    */
                     string request = new DataCommand(RoundDurationMs - timer.ElapsedMilliseconds, petriCup, Players[i].Goo, CurrentRound.GetNearEntities(Players[i])).ToRequest();
                     Server.Send(Players[i].EndPoint, Encoding.UTF8.GetBytes(request));
                     //Console.WriteLine(request);
@@ -61,8 +63,8 @@ namespace MyAgarIoServer
             Players.Sort();
 
             timer.Restart();
-
-            while (timer.ElapsedMilliseconds < 5000 && CurrentRound.Players.Count > 1)
+            /*
+            while (timer.ElapsedMilliseconds < 5000 && CurrentRound.Players.Count > 0)
             {
                 for (int i = 0; i < Players.Count; i++)
                 {
@@ -73,6 +75,7 @@ namespace MyAgarIoServer
 
                 Thread.Sleep(10);
             }
+            */
         }
     }
 }

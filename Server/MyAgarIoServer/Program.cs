@@ -7,7 +7,7 @@ namespace MyAgarIoServer
         static void Main(string[] args)
         {
             Server server = new Server();
-            GameController gameController = new GameController(server, 10000);
+            GameController gameController = new GameController(server, 60000);
             new Thread(new ParameterizedThreadStart(server.Listen)).Start(gameController);
 
             while (true)

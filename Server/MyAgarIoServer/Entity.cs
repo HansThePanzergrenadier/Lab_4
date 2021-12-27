@@ -7,8 +7,11 @@ namespace MyAgarIoServer
 {
     abstract class Entity
     {
-        [JsonProperty("pos")]
-        public Vector2 Position { get; set; }
+        [JsonProperty("x")]
+        public float X { get; set; }
+
+        [JsonProperty("y")]
+        public float Y { get; set; }
 
         [JsonProperty("r")]
         public int Radius { get; set; }
@@ -16,9 +19,10 @@ namespace MyAgarIoServer
         [JsonProperty("color")]
         public Color Color { get; set; }
 
-        public Entity(Vector2 position, int radius, Color color)
+        public Entity(float x, float y, int radius, Color color)
         {
-            Position = position;
+            X = x;
+            Y = y;
             Radius = radius;
             Color = color;
         }
@@ -38,7 +42,7 @@ namespace MyAgarIoServer
 
         public double GetDistanceBetweenCenters(Entity other)
         {
-            return Math.Sqrt(Math.Pow(Position.X - other.Position.X, 2) + Math.Pow(Position.Y - other.Position.Y, 2));
+            return Math.Sqrt(Math.Pow(X - other.X, 2) + Math.Pow(Y - other.Y, 2));
         }
     }
 }

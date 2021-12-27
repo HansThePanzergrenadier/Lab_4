@@ -24,12 +24,12 @@ namespace MyAgarIoServer
         [JsonIgnore]
         public MoveCommand CurrentMoveCommand { get; set; }
 
-        public Goo(Vector2 position, Color color, string name) : base(position, INIT_RADIUS, color)
+        public Goo(float x, float y, Color color, string name) : base(x, y, INIT_RADIUS, color)
         {
             Name = name;
-            Speed = 5;
+            Speed = 20;
             EatingSpeed = 5;
-            ViewingRadius = 500;
+            ViewingRadius = 1000;
             CurrentMoveCommand = MoveCommand.STOP;
         }
 
@@ -61,15 +61,27 @@ namespace MyAgarIoServer
                 return;
             }
 
-            Vector2 newPosition = new Vector2(Position.X, Position.Y);
-            newPosition = new Vector2(newPosition.X, newPosition.Y - (CurrentMoveCommand.Up ? Speed : 0));
-            newPosition = new Vector2(newPosition.X, newPosition.Y + (CurrentMoveCommand.Down ? Speed : 0));
-            newPosition = new Vector2(newPosition.Y - (CurrentMoveCommand.Left ? Speed : 0), newPosition.Y);
-            newPosition = new Vector2(newPosition.Y + (CurrentMoveCommand.Right ? Speed : 0), newPosition.Y);
-
-            if (petriCup.IsInCup(newPosition, Radius))
+            float newX = X, newY = Y;
+            if (CurrentMoveCommand.Left)
             {
-                Position = newPosition;
+                newX = X - Speed;
+            }else if (CurrentMoveCommand.Right)
+            {
+                newX = X + Speed;
+            }
+            if (CurrentMoveCommand.Up)
+            {
+                newY = Y + Speed;
+            }
+            else if(CurrentMoveCommand.Down)
+            {
+                newY = Y - Speed;
+            }
+
+            if (petriCup.IsInCup(newX, newY))
+            {
+                X = newX;
+                Y = newY;
                 CurrentMoveCommand = MoveCommand.STOP;
             }
         }
@@ -96,32 +108,18 @@ namespace MyAgarIoServer
         public void Reset(PetriCup petriCup)
         {
             Random random = new Random();
-            Vector2 position;
 
             Radius = INIT_RADIUS;
 
-            do
-            {
-                position = new Vector2(random.Next((int)petriCup.Position.X - petriCup.Radius, (int)petriCup.Position.X + petriCup.Radius),
-                    random.Next((int)petriCup.Position.X - petriCup.Radius, (int)petriCup.Position.X + petriCup.Radius));
-            } while (petriCup.IsInCup(position, Radius));
-
-            Position = position;
+            X = random.Next(-petriCup.Size / 2, petriCup.Size / 2);
+            Y = random.Next(-petriCup.Size / 2, petriCup.Size / 2);
         }
 
         public static Goo Create(string name, PetriCup petriCup)
         {
             Random random = new Random();
-            Vector2 position;
             Color color = Color.FromArgb(random.Next(0, 15) * 15, random.Next(0, 15) * 15, random.Next(0, 15) * 15, random.Next(0, 15) * 15);
-            Goo goo;
-
-            do
-            {
-                position = new Vector2(random.Next((int)petriCup.Position.X - petriCup.Radius, (int)petriCup.Position.X + petriCup.Radius),
-                    random.Next((int)petriCup.Position.X - petriCup.Radius, (int)petriCup.Position.X + petriCup.Radius));
-                goo = new Goo(position, color, name);
-            } while (petriCup.IsInCup(position, goo.Radius));
+            Goo goo = new Goo(random.Next(-petriCup.Size / 2, petriCup.Size / 2), random.Next(-petriCup.Size / 2, petriCup.Size / 2), color, name);
 
             return goo;
         }

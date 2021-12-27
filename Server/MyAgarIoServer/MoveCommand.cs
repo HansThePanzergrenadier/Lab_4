@@ -5,7 +5,7 @@ namespace MyAgarIoServer
     class MoveCommand : Command
     {
         [JsonIgnore]
-        public static readonly MoveCommand STOP = new MoveCommand();
+        public static readonly MoveCommand STOP = new MoveCommand(false, false, false, false);
 
         [JsonProperty("up")]
         public bool Up { get; set; }
@@ -19,7 +19,7 @@ namespace MyAgarIoServer
         [JsonProperty("right")]
         public bool Right { get; set; }
 
-        public MoveCommand(bool up = false, bool down = false, bool left = false, bool right = false)
+        public MoveCommand(bool up, bool down, bool left, bool right)
         {
             Up = up;
             Down = down;

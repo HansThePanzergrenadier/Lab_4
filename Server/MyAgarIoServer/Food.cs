@@ -9,7 +9,7 @@ namespace MyAgarIoServer
         private static int MAX_RADIUS = 100;
         private static Color COLOR = Color.FromArgb(80, 215, 190, 100);
 
-        public Food(Vector2 position, int radius) : base(position, radius, COLOR)
+        public Food(float x, float y, int radius) : base(x, y, radius, COLOR)
         {
 
         }
@@ -17,15 +17,7 @@ namespace MyAgarIoServer
         public static Food Create(PetriCup petriCup)
         {
             Random random = new Random();
-            Vector2 position;
-            Food food;
-
-            do
-            {
-                position = new Vector2(random.Next((int)petriCup.Position.X - petriCup.Radius, (int)petriCup.Position.X + petriCup.Radius),
-                    random.Next((int)petriCup.Position.X - petriCup.Radius, (int)petriCup.Position.X + petriCup.Radius));
-                food = new Food(position, random.Next(1, MAX_RADIUS));
-            } while (petriCup.IsInCup(position, food.Radius));
+            Food food = new Food(random.Next(-petriCup.Size / 2, petriCup.Size / 2), random.Next(-petriCup.Size / 2, petriCup.Size / 2), random.Next(10, MAX_RADIUS));
 
             return food;
         }

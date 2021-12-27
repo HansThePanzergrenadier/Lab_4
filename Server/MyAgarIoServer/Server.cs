@@ -33,45 +33,48 @@ namespace MyAgarIoServer
 
                 try
                 {
-                    do
+                    if (Socket.Available > 0)
                     {
+
                         int size = Socket.ReceiveFrom(buffer, ref clientEndPoint);
                         data.Append(Encoding.UTF8.GetString(buffer, 0, size));
-                    }
-                    while (Socket.Available > 0);
 
-                    Command command = Command.FromRequest(data.ToString());
 
-                    switch (command.GetCommandType())
-                    {
-                        case Command.CREATE:
-                            CreateCommand createCommand = (CreateCommand)command;
-                            Player player = new Player(clientEndPoint, createCommand.Name, Goo.Create(createCommand.Name, gameController.CurrentRound.PetriCup));
-                            if (!gameController.CurrentRound.Players.Contains(player))
-                            {
-                                gameController.CurrentRound.Players.Add(player);
-                            }
-                            break;
-                        case Command.MOVE:
-                            MoveCommand moveCommand = (MoveCommand)command;
-                            List<Player> players = gameController.CurrentRound.Players;
-                            for (int i = 0; i < players.Count; i++)
-                            {
-                                if (players[i].EndPoint.Equals(clientEndPoint))
+
+                        Command command = Command.FromRequest(data.ToString());
+
+                        Console.WriteLine(data);
+
+                        switch (command.GetCommandType())
+                        {
+                            case Command.CREATE:
+                                CreateCommand createCommand = (CreateCommand)command;
+                                Player player = new Player(clientEndPoint, createCommand.Name, Goo.Create(createCommand.Name, gameController.CurrentRound.PetriCup));
+                                if (!gameController.CurrentRound.Players.Contains(player))
                                 {
-                                    players[i].Goo.CurrentMoveCommand = moveCommand;
-                                    break;
+                                    gameController.CurrentRound.Players.Add(player);
                                 }
-                            }
-                            break;
+                                break;
+                            case Command.MOVE:
+                                MoveCommand moveCommand = (MoveCommand)command;
+                                List<Player> players = gameController.CurrentRound.Players;
+                                for (int i = 0; i < players.Count; i++)
+                                {
+                                    if (players[i].EndPoint.Equals(clientEndPoint))
+                                    {
+                                        players[i].Goo.CurrentMoveCommand = moveCommand;
+                                        break;
+                                    }
+                                }
+                                break;
+                        }
                     }
-
-                    gameController.CurrentRound.Players.Find(p => p.EndPoint.Equals(clientEndPoint)).LastRequestTimer.Restart();
+                    //gameController.CurrentRound.Players.Find(p => p.EndPoint.Equals(clientEndPoint)).LastRequestTimer.Restart();
                 }
                 catch (Exception ex)
                 {
                     //gameController.CurrentRound.Players.RemoveAll(p => p.EndPoint.Equals(clientEndPoint));
-                    //Console.WriteLine(ex.Message);
+                    Console.WriteLine(data);
                 }
             }
         }
