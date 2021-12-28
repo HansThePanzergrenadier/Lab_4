@@ -27,13 +27,13 @@ namespace MyAgarIoServer
 
             while (true)
             {
-                byte[] buffer = new byte[1024];
+                byte[] buffer = new byte[2048];
                 StringBuilder data = new StringBuilder();
                 EndPoint clientEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
                 try
                 {
-                    if (Socket.Available > 0)
+                    if (Socket.Available > 1)
                     {
 
                         int size = Socket.ReceiveFrom(buffer, ref clientEndPoint);

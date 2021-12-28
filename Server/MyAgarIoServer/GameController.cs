@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -63,19 +64,19 @@ namespace MyAgarIoServer
             Players.Sort();
 
             timer.Restart();
-            /*
-            while (timer.ElapsedMilliseconds < 5000 && CurrentRound.Players.Count > 0)
+            
+            while (timer.ElapsedMilliseconds < 7000 && CurrentRound.Players.Count > 0)
             {
                 for (int i = 0; i < Players.Count; i++)
                 {
-                    string request = new ResultCommand(Players).ToRequest();
+                    string request = new ResultCommand(Players.Select(p => p.Goo).ToList()).ToRequest();
                     Server.Send(Players[i].EndPoint, Encoding.UTF8.GetBytes(request));
                     //Console.WriteLine(request);
                 }
 
                 Thread.Sleep(10);
             }
-            */
+            
         }
     }
 }

@@ -27,9 +27,9 @@ namespace MyAgarIoServer
         public Goo(float x, float y, Color color, string name) : base(x, y, INIT_RADIUS, color)
         {
             Name = name;
-            Speed = 20;
-            EatingSpeed = 5;
-            ViewingRadius = 1000;
+            Speed = 10;
+            EatingSpeed = 800;
+            ViewingRadius = 1800;
             CurrentMoveCommand = MoveCommand.STOP;
         }
 
@@ -42,14 +42,16 @@ namespace MyAgarIoServer
 
         public void Eat(Entity other)
         {
-            if (other.Radius >= EatingSpeed)
+            double squareThis = Math.PI * Math.Pow(Radius, 2);
+            double squareOther = Math.PI * Math.Pow(other.Radius, 2);
+            if (squareOther >= EatingSpeed)
             {
-                Radius += EatingSpeed;
-                other.Radius -= EatingSpeed;
+                Radius = (float)Math.Round(Math.Sqrt((squareThis + EatingSpeed) / Math.PI));
+                other.Radius = (float)Math.Round(Math.Sqrt((squareOther - EatingSpeed) / Math.PI));
             }
             else
             {
-                Radius += other.Radius;
+                Radius = (float)Math.Round(Math.Sqrt((squareThis + squareOther) / Math.PI));
                 other.Radius = 0;
             }
         }
@@ -65,7 +67,8 @@ namespace MyAgarIoServer
             if (CurrentMoveCommand.Left)
             {
                 newX = X - Speed;
-            }else if (CurrentMoveCommand.Right)
+            }
+            else if (CurrentMoveCommand.Right)
             {
                 newX = X + Speed;
             }
@@ -73,7 +76,7 @@ namespace MyAgarIoServer
             {
                 newY = Y + Speed;
             }
-            else if(CurrentMoveCommand.Down)
+            else if (CurrentMoveCommand.Down)
             {
                 newY = Y - Speed;
             }

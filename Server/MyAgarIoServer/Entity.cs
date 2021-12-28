@@ -14,12 +14,12 @@ namespace MyAgarIoServer
         public float Y { get; set; }
 
         [JsonProperty("r")]
-        public int Radius { get; set; }
+        public float Radius { get; set; }
 
         [JsonProperty("color")]
         public Color Color { get; set; }
 
-        public Entity(float x, float y, int radius, Color color)
+        public Entity(float x, float y, float radius, Color color)
         {
             X = x;
             Y = y;

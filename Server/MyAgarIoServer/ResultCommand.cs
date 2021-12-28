@@ -6,9 +6,9 @@ namespace MyAgarIoServer
     class ResultCommand : Command
     {
         [JsonProperty("res")]
-        public List<Player> Results { get; set; }
+        public List<Goo> Results { get; set; }
 
-        public ResultCommand(List<Player> results)
+        public ResultCommand(List<Goo> results)
         {
             Results = results;
         }
