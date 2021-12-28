@@ -8,7 +8,7 @@ public class ScoreContentController : MonoBehaviour
     List<GameObject> recs = new List<GameObject>();
     void Start()
     {
-        //ShowRecords(new List<string> { "dloi", "fdfs", "afsdfs", "fsdf", "hhfg" });
+
     }
 
     void Update()

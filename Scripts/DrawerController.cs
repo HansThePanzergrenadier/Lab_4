@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
 using System.Threading;
 using System.Text;
+using System.Linq;
 
 public class DrawerController : MonoBehaviour
 {
@@ -19,34 +20,40 @@ public class DrawerController : MonoBehaviour
     public GameObject lobbyScr;
     List<GameObject> nativeEntities = new List<GameObject>();
     EndPoint clientEndPoint, serverEndPoint;
-    float halfParWidth, halfParHeight;
     const string ip = "127.0.0.1";
     int port;
     Socket udpSocket;
     bool connected = false;
+    bool scoresShowing = false;
     DataCommand dataComm;
+    List<string> scores;
+    Thread recieveTh;
 
     void Start()
     {
-        halfParWidth = GetComponent<RectTransform>().rect.width / 2;
-        halfParHeight = GetComponent<RectTransform>().rect.height / 2;
         //port = 8081;
         port = new System.Random().Next(8081, 10200);
         clientEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
         udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         udpSocket.Bind(clientEndPoint);
         serverEndPoint = new IPEndPoint(IPAddress.Parse(ip), 8080);
-        Thread t = new Thread(RecieveUDP);
-        t.Start();
+        recieveTh = new Thread(RecieveUDP);
+        recieveTh.Start();
+        player.GetComponent<GooController>().Nickname = PlayerPrefs.GetString("Nickname", "Player");
+    }
+
+    private void Awake()
+    {
+        Application.runInBackground = true;
     }
 
     void Update()
     {
-        Thread.Sleep(10);
+        Thread.Sleep(20);
         if (!connected)
         {
-            
-            string nik = "abdolba";
+
+            string nik = player.GetComponent<GooController>().Nickname;
 
             string createReq = $"0{{\"name\":\"{nik}\"}}";
             SendUDP(Encoding.UTF8.GetBytes(createReq));
@@ -58,6 +65,7 @@ public class DrawerController : MonoBehaviour
             {
                 lobbyScr.SetActive(false);
             }
+
             //clearing view
             foreach (var el in nativeEntities)
             {
@@ -65,7 +73,7 @@ public class DrawerController : MonoBehaviour
             }
             //filling view from server data
             string moveReq = $"1{{\"up\":{Input.GetKey(KeyCode.W)},\"down\":{Input.GetKey(KeyCode.S)},\"left\":{Input.GetKey(KeyCode.A)},\"right\":{Input.GetKey(KeyCode.D)}}}".ToLower();
-            
+
             SendUDP(Encoding.UTF8.GetBytes(moveReq));
             if (dataComm != null)
             {
@@ -75,38 +83,44 @@ public class DrawerController : MonoBehaviour
                     nativeEntities.Add(DrawEntity(el));
                 }
             }
+
+            if (scoresShowing)
+            {
+                if (!scoreboard.active)
+                {
+                    ShowScores(scores);
+                }
+            }
+            else
+            {
+                if (scoreboard.active)
+                {
+                    CloseScores();
+                }
+            }
         }
     }
 
     public GameObject DrawEntity(Entity ent)
     {
         Color c = new Color32(ent.color.R, ent.color.G, ent.color.B, ent.color.A);
-        float x = ent.x;
-        float y = ent.y;
-        float radius = ent.r;
-        /*
-        float r = ent.color.R;
-        float g = ent.color.G;
-        float b = ent.color.B;
-        */
-        string nick = "eat me";
-        var inst = Instantiate(entity, transform, false);
+        string nick = "";
+
+        Vector3 placing = new Vector3(ent.x, ent.y) - transform.position;
+        var inst = Instantiate(entity, placing, Quaternion.identity);
         Debug.Log($"{ent.x}, {ent.y}");
-        inst.GetComponent<GooController>().SetData(ent.x, ent.y, ent.r, c.r, c.g, c.b, nick);
+
+        inst.GetComponent<EntityController>().SetData(ent.x, ent.y, ent.r, c.r, c.g, c.b, nick);
+
         return inst;
     }
 
     public void DrawPlayer(Goo goo)
     {
-        Color c = new Color32(goo.color.R, goo.color.G, goo.color.B, goo.color.A); 
+        Color c = new Color32(goo.color.R, goo.color.G, goo.color.B, goo.color.A);
         float x = goo.x;
         float y = goo.y;
         float radius = goo.r;
-        /*
-        float r = goo.color.R;
-        float g = goo.color.G;
-        float b = goo.color.B;
-        */
         string nick = goo.name;
         player.GetComponent<GooController>().SetData(x, y, radius, c.r, c.g, c.b, nick);
     }
@@ -115,15 +129,16 @@ public class DrawerController : MonoBehaviour
     {
         while (true)
         {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[2048];
             StringBuilder data = new StringBuilder();
+            EndPoint anyIP = new IPEndPoint(IPAddress.Any, 0);
             do
             {
-                int size = udpSocket.ReceiveFrom(buffer, ref serverEndPoint);
+                int size = udpSocket.ReceiveFrom(buffer, ref anyIP);
                 data.Append(Encoding.UTF8.GetString(buffer, 0, size));
             }
             while (udpSocket.Available > 0);
-            
+
             string json = data.ToString().Substring(1);
             char type = data.ToString()[0];
             connected = true;
@@ -134,9 +149,12 @@ public class DrawerController : MonoBehaviour
                     case '2':
                         Debug.Log(json);
                         dataComm = JsonConvert.DeserializeObject<DataCommand>(json);
+                        scoresShowing = false;
                         break;
                     case '3':
-
+                        Debug.Log(json);
+                        scoresShowing = true;
+                        scores = JsonConvert.DeserializeObject<ResultCommand>(json).res.Select(g => $"{g.name} ({g.r})").ToList();
                         break;
                 }
             }
@@ -163,14 +181,6 @@ public class DrawerController : MonoBehaviour
         udpSocket.SendTo(data, serverEndPoint);
     }
 
-    private void TakeControls(out bool forward, out bool backward, out bool left, out bool right)
-    {
-        forward = Input.GetKey(KeyCode.W);
-        backward = Input.GetKey(KeyCode.S);
-        left = Input.GetKey(KeyCode.A);
-        right = Input.GetKey(KeyCode.D);
-    }
-
     private void ShowScores(List<string> result)
     {
         scoreboard.SetActive(true);
@@ -183,8 +193,18 @@ public class DrawerController : MonoBehaviour
     }
     public void ReturnToMenu()
     {
+        recieveTh.Abort();
+        udpSocket.Shutdown(SocketShutdown.Both);
+        udpSocket.Close();
         SceneManager.LoadSceneAsync("MainMenu");
         SceneManager.UnloadSceneAsync(SceneManager.GetSceneByName("GameWorld"));
+    }
+
+    private void OnApplicationQuit()
+    {
+        recieveTh.Abort();
+        udpSocket.Shutdown(SocketShutdown.Both);
+        udpSocket.Close();
     }
 }
 
@@ -192,7 +212,7 @@ public class DrawerController : MonoBehaviour
 public class Entity
 {
     public float x, y;
-    public int r;
+    public float r;
     public System.Drawing.Color color;
 }
 
@@ -210,6 +230,12 @@ public class Goo
     public string name;
     public int view_r;
     public float x, y;
-    public int r;
+    public float r;
     public System.Drawing.Color color;
+}
+
+[Serializable]
+public class ResultCommand
+{
+    public List<Goo> res;
 }

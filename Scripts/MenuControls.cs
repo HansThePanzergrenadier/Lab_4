@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class MenuControls : MonoBehaviour
 {
+    public AudioMixer AM;
     public void StartButtonPressed()
     {
         SceneManager.LoadScene("GameWorld");
@@ -17,7 +18,13 @@ public class MenuControls : MonoBehaviour
         {
             SceneManager.UnloadSceneAsync(0);
         }
+        
         Application.Quit();
+    }
+
+    private void Awake()
+    {
+        Application.runInBackground = true;
     }
 }
 

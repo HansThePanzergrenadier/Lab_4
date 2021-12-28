@@ -3,37 +3,44 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GooController : MonoBehaviour
+public class EntityController : MonoBehaviour
 {
 
-    public float Xabs, Yabs;
-    public string Nickname;
+    public int ticksToDeath;
+    float Xabs, Yabs;
+    string Nickname;
     Vector2 moving;
     Color col;
 
     float origSize;
-    public float destSize;
+    float destSize;
     public GameObject NickCanv;
-    //float halfParWidth, halfParHeight;
 
     void Start()
     {
         origSize = GetComponent<SpriteRenderer>().sprite.rect.width;
-        //halfParWidth = GetComponentInParent<RectTransform>().rect.width / 2;
-        //halfParHeight = GetComponentInParent<RectTransform>().rect.height / 2;
-    }
-    
-    void Update()
-    {
-        //set new coords
-        moving = new Vector2(Xabs, Yabs) - (Vector2)transform.localPosition;
-        transform.Translate(moving);
+        //moving = new Vector2(Xabs, Yabs) - (Vector2)transform.localPosition;
+        //transform.Translate(moving);
         //set new size
         float curSize = origSize * transform.localScale.x;
         float diffRatio = destSize / curSize;
         var scale = transform.localScale;
         transform.localScale = new Vector3(scale.x * diffRatio, scale.y * diffRatio, scale.z);
-        NickCanv.GetComponent<Text>().text = Nickname;
+        //NickCanv.GetComponent<Text>().text = Nickname;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(ticksToDeath > 0)
+        {
+            //actually live
+            ticksToDeath--;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     public void SetData(float newX, float newY, float newSize, float red, float green, float blue, string nick)
