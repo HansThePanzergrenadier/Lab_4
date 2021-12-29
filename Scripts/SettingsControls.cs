@@ -24,7 +24,7 @@ public class SettingsControls : MonoBehaviour
 
     public void SetNickName(string nick)
     {
-        //InterSceneBuffer.NickName = nick;
+        PlayerPrefs.SetString("Nickname", nick);
     }
 
     public void SetResolution(int index)
