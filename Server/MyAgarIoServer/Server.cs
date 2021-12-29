@@ -43,7 +43,14 @@ namespace MyAgarIoServer
 
                         Command command = Command.FromRequest(data.ToString());
 
-                        Console.WriteLine(data);
+                        //Console.WriteLine(data);
+                        for (int i = 0; i < gameController.Players.Count; i++)
+                        {
+                            if (gameController.Players[i].EndPoint.Equals(clientEndPoint))
+                            {
+                                gameController.Players[i].LastRequestTimer.Restart();
+                            }
+                        }
 
                         switch (command.GetCommandType())
                         {
@@ -69,12 +76,11 @@ namespace MyAgarIoServer
                                 break;
                         }
                     }
-                    //gameController.CurrentRound.Players.Find(p => p.EndPoint.Equals(clientEndPoint)).LastRequestTimer.Restart();
+
                 }
                 catch (Exception ex)
                 {
-                    //gameController.CurrentRound.Players.RemoveAll(p => p.EndPoint.Equals(clientEndPoint));
-                    Console.WriteLine(data);
+                    //Console.WriteLine(data);
                 }
             }
         }

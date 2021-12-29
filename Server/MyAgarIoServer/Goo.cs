@@ -24,7 +24,7 @@ namespace MyAgarIoServer
         [JsonIgnore]
         public MoveCommand CurrentMoveCommand { get; set; }
 
-        public Goo(float x, float y, Color color, string name) : base(x, y, INIT_RADIUS, color)
+        public Goo(float x, float y, byte colorR, byte colorG, byte colorB, string name) : base(x, y, INIT_RADIUS, colorR, colorG, colorB)
         {
             Name = name;
             Speed = 10;
@@ -46,12 +46,12 @@ namespace MyAgarIoServer
             double squareOther = Math.PI * Math.Pow(other.Radius, 2);
             if (squareOther >= EatingSpeed)
             {
-                Radius = (float)Math.Round(Math.Sqrt((squareThis + EatingSpeed) / Math.PI));
-                other.Radius = (float)Math.Round(Math.Sqrt((squareOther - EatingSpeed) / Math.PI));
+                Radius = (float)Math.Sqrt((squareThis + EatingSpeed) / Math.PI);
+                other.Radius = (float)Math.Sqrt((squareOther - EatingSpeed) / Math.PI);
             }
             else
             {
-                Radius = (float)Math.Round(Math.Sqrt((squareThis + squareOther) / Math.PI));
+                Radius = (float)Math.Sqrt((squareThis + squareOther) / Math.PI);
                 other.Radius = 0;
             }
         }
@@ -121,8 +121,10 @@ namespace MyAgarIoServer
         public static Goo Create(string name, PetriCup petriCup)
         {
             Random random = new Random();
-            Color color = Color.FromArgb(random.Next(0, 15) * 15, random.Next(0, 15) * 15, random.Next(0, 15) * 15, random.Next(0, 15) * 15);
-            Goo goo = new Goo(random.Next(-petriCup.Size / 2, petriCup.Size / 2), random.Next(-petriCup.Size / 2, petriCup.Size / 2), color, name);
+            byte colorR = (byte)(random.Next(0, 15) * 15);
+            byte colorG = (byte)(random.Next(0, 15) * 15);
+            byte colorB = (byte)(random.Next(0, 15) * 15);
+            Goo goo = new Goo(random.Next(-petriCup.Size / 2, petriCup.Size / 2), random.Next(-petriCup.Size / 2, petriCup.Size / 2), colorR, colorG, colorB, name);
 
             return goo;
         }

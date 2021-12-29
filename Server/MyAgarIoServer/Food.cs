@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Drawing;
-using System.Numerics;
 
 namespace MyAgarIoServer
 {
     class Food : Entity
     {
         private static int MAX_RADIUS = 100;
-        private static Color COLOR = Color.FromArgb(80, 215, 190, 100);
+        private static byte _colorR = 215;
+        private static byte _colorG = 190;
+        private static byte _colorB = 100;
 
-        public Food(float x, float y, int radius) : base(x, y, radius, COLOR)
+        public Food(float x, float y, int radius) : base(x, y, radius, _colorR, _colorG, _colorB)
         {
 
         }

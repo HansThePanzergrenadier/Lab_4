@@ -45,13 +45,13 @@ namespace MyAgarIoServer
                 CurrentRound.CheckAllContact();
                 for (int i = 0; i < Players.Count; i++)
                 {
-                    /*
+                    
                     if (Players[i].LastRequestTimer.ElapsedMilliseconds > 15000)
                     {
                         Players.RemoveAt(i);
                         continue;
                     }
-                    */
+                    
                     string request = new DataCommand(RoundDurationMs - timer.ElapsedMilliseconds, petriCup, Players[i].Goo, CurrentRound.GetNearEntities(Players[i])).ToRequest();
                     Server.Send(Players[i].EndPoint, Encoding.UTF8.GetBytes(request));
                     //Console.WriteLine(request);
@@ -62,6 +62,7 @@ namespace MyAgarIoServer
 
             CurrentRound.RoundState = RoundState.ENDED;
             Players.Sort();
+            Players.Reverse();
 
             timer.Restart();
             

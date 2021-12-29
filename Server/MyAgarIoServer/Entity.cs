@@ -16,15 +16,23 @@ namespace MyAgarIoServer
         [JsonProperty("r")]
         public float Radius { get; set; }
 
-        [JsonProperty("color")]
-        public Color Color { get; set; }
+        [JsonProperty("col_r")]
+        public byte ColorR { get; set; }
 
-        public Entity(float x, float y, float radius, Color color)
+        [JsonProperty("col_g")]
+        public byte ColorG { get; set; }
+
+        [JsonProperty("col_b")]
+        public byte ColorB { get; set; }
+
+        public Entity(float x, float y, float radius, byte colorR, byte colorG, byte colorB)
         {
             X = x;
             Y = y;
             Radius = radius;
-            Color = color;
+            ColorR = colorR;
+            ColorG = colorG;
+            ColorB = colorB;
         }
 
         public bool IsEaten()
