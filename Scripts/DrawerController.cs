@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System.Threading;
 using System.Text;
 using System.Linq;
+using UnityEngine.UI;
 
 public class DrawerController : MonoBehaviour
 {
@@ -25,6 +26,7 @@ public class DrawerController : MonoBehaviour
     Socket udpSocket;
     bool connected = false;
     bool scoresShowing = false;
+    bool failedCon = false;
     DataCommand dataComm;
     List<string> scores;
     Thread recieveTh;
@@ -40,19 +42,28 @@ public class DrawerController : MonoBehaviour
         recieveTh = new Thread(RecieveUDP);
         recieveTh.Start();
         player.GetComponent<GooController>().Nickname = PlayerPrefs.GetString("Nickname", "Player");
+        lobbyScr.transform.Find("StatusText").gameObject.GetComponent<Text>().text = "Connecting to server...";
     }
 
     private void Awake()
     {
         Application.runInBackground = true;
+        if (player.GetComponent<GooController>().Nickname == "")
+        {
+            player.GetComponent<GooController>().Nickname = "ABOBA";
+        }
     }
 
     void Update()
     {
-        Thread.Sleep(20);
+        //Thread.Sleep(20);
         if (!connected)
         {
-
+            lobbyScr.SetActive(true);
+            if (failedCon)
+            {
+                lobbyScr.transform.Find("StatusText").gameObject.GetComponent<Text>().text = "Failed";
+            }
             string nik = player.GetComponent<GooController>().Nickname;
 
             string createReq = $"0{{\"name\":\"{nik}\"}}";
@@ -71,10 +82,11 @@ public class DrawerController : MonoBehaviour
             {
                 Destroy(el);
             }
-            //filling view from server data
+            //form data and send it
             string moveReq = $"1{{\"up\":{Input.GetKey(KeyCode.W)},\"down\":{Input.GetKey(KeyCode.S)},\"left\":{Input.GetKey(KeyCode.A)},\"right\":{Input.GetKey(KeyCode.D)}}}".ToLower();
 
             SendUDP(Encoding.UTF8.GetBytes(moveReq));
+            //get data
             if (dataComm != null)
             {
                 DrawPlayer(dataComm.goo);
@@ -83,27 +95,23 @@ public class DrawerController : MonoBehaviour
                     nativeEntities.Add(DrawEntity(el));
                 }
             }
-
+            //show scoreboard if needed
             if (scoresShowing)
             {
-                if (!scoreboard.active)
-                {
-                    ShowScores(scores);
-                }
+                ShowScores(scores);
             }
             else
             {
-                if (scoreboard.active)
-                {
-                    CloseScores();
-                }
+
+                CloseScores();
+
             }
         }
     }
 
     public GameObject DrawEntity(Entity ent)
     {
-        Color c = new Color32(ent.color.R, ent.color.G, ent.color.B, ent.color.A);
+        Color c = new Color32(ent.col_r, ent.col_g, ent.col_b, 1);
         string nick = "";
 
         Vector3 placing = new Vector3(ent.x, ent.y) - transform.position;
@@ -117,68 +125,78 @@ public class DrawerController : MonoBehaviour
 
     public void DrawPlayer(Goo goo)
     {
-        Color c = new Color32(goo.color.R, goo.color.G, goo.color.B, goo.color.A);
+        Color c = new Color32(goo.col_r, goo.col_g, goo.col_b, 1);
         float x = goo.x;
         float y = goo.y;
         float radius = goo.r;
         string nick = goo.name;
+        if (radius <= 1)
+        {
+            radius = 1;
+        }
         player.GetComponent<GooController>().SetData(x, y, radius, c.r, c.g, c.b, nick);
     }
 
     private void RecieveUDP()
     {
-        while (true)
+        try
         {
-            byte[] buffer = new byte[2048];
-            StringBuilder data = new StringBuilder();
-            EndPoint anyIP = new IPEndPoint(IPAddress.Any, 0);
-            do
+            while (true)
             {
-                int size = udpSocket.ReceiveFrom(buffer, ref anyIP);
-                data.Append(Encoding.UTF8.GetString(buffer, 0, size));
-            }
-            while (udpSocket.Available > 0);
-
-            string json = data.ToString().Substring(1);
-            char type = data.ToString()[0];
-            connected = true;
-            try
-            {
-                switch (type)
+                if (udpSocket == null)
                 {
-                    case '2':
-                        Debug.Log(json);
-                        dataComm = JsonConvert.DeserializeObject<DataCommand>(json);
-                        scoresShowing = false;
-                        break;
-                    case '3':
-                        Debug.Log(json);
-                        scoresShowing = true;
-                        scores = JsonConvert.DeserializeObject<ResultCommand>(json).res.Select(g => $"{g.name} ({g.r})").ToList();
-                        break;
+                    break;
+                }
+                byte[] buffer = new byte[2048];
+                StringBuilder data = new StringBuilder();
+                EndPoint anyIP = new IPEndPoint(IPAddress.Any, 0);
+                do
+                {
+                    int size = udpSocket.ReceiveFrom(buffer, ref anyIP);
+                    data.Append(Encoding.UTF8.GetString(buffer, 0, size));
+                }
+                while (udpSocket.Available > 0);
+
+                string json = data.ToString().Substring(1);
+                char type = data.ToString()[0];
+                connected = true;
+                try
+                {
+                    switch (type)
+                    {
+                        case '2':
+                            Debug.Log(json);
+                            dataComm = JsonConvert.DeserializeObject<DataCommand>(json);
+                            scoresShowing = false;
+                            break;
+                        case '3':
+                            Debug.Log(json);
+                            scoresShowing = true;
+                            scores = JsonConvert.DeserializeObject<ResultCommand>(json).res.Select(g => $"{g.name} ({g.r})").ToList();
+                            break;
+                    }
+                }
+                catch (JsonReaderException)
+                {
+                    Debug.Log("Json deserialization error");
                 }
             }
-            catch (JsonReaderException)
-            {
-            }
         }
-        //you should parse incoming string here and call DrawEntity() for every Other entity
-        //set nick field to "" if it is food
-        //every returned GameObject from the DrawEntity() must be added to entities list
-        //call DrawPlayer() for proceeding player data once at iteration
-        //
-        //after that call TakeControls() to get 4 bools which you will send to server
-        //
-        //if recieved RESULT packet, call ShowScores()
-        //
-        //call CloseScores() when recieve DATA again
-        //
+        catch (SocketException)
+        {
+            connected = false;
+            failedCon = true;
+
+        }
     }
 
     private void SendUDP(byte[] data)
     {
         Debug.Log(Encoding.UTF8.GetString(data));
-        udpSocket.SendTo(data, serverEndPoint);
+        if (udpSocket != null)
+        {
+            udpSocket.SendTo(data, serverEndPoint);
+        }
     }
 
     private void ShowScores(List<string> result)
@@ -193,19 +211,36 @@ public class DrawerController : MonoBehaviour
     }
     public void ReturnToMenu()
     {
-        recieveTh.Abort();
-        udpSocket.Shutdown(SocketShutdown.Both);
-        udpSocket.Close();
-        SceneManager.LoadSceneAsync("MainMenu");
-        SceneManager.UnloadSceneAsync(SceneManager.GetSceneByName("GameWorld"));
+
+        if (recieveTh != null)
+        {
+            recieveTh.Abort();
+
+        }
+        if (udpSocket != null)
+        {
+            udpSocket.Shutdown(SocketShutdown.Both);
+            udpSocket.Close();
+        }
+        udpSocket = null;
+        SceneManager.LoadScene("MainMenu", LoadSceneMode.Single);
     }
 
     private void OnApplicationQuit()
     {
-        recieveTh.Abort();
-        udpSocket.Shutdown(SocketShutdown.Both);
-        udpSocket.Close();
+        if (recieveTh != null)
+        {
+            recieveTh.Abort();
+
+        }
+        if (udpSocket != null)
+        {
+            udpSocket.Shutdown(SocketShutdown.Both);
+            udpSocket.Close();
+        }
+        udpSocket = null;
     }
+
 }
 
 [Serializable]
@@ -213,7 +248,7 @@ public class Entity
 {
     public float x, y;
     public float r;
-    public System.Drawing.Color color;
+    public byte col_r, col_g, col_b;
 }
 
 [Serializable]
@@ -231,7 +266,7 @@ public class Goo
     public int view_r;
     public float x, y;
     public float r;
-    public System.Drawing.Color color;
+    public byte col_r, col_g, col_b;
 }
 
 [Serializable]

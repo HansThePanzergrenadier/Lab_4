@@ -18,12 +18,22 @@ public class ScoreContentController : MonoBehaviour
 
     public void ShowRecords(List<string> strs)
     {
-        recs.Clear();
-        foreach(var el in strs)
+        if (recs.Count > 0)
         {
-            var ins = Instantiate(ScoreRecord, GetComponentInParent<Transform>(), false);
-            recs.Add(ins);
-            ins.GetComponent<ScoreRecordController>().SetText(el);
+            foreach (var el in recs)
+            {
+                Destroy(el);
+            }
+            recs.Clear();
+        }
+        if (strs != null && strs.Count > 0)
+        {
+            foreach (var el in strs)
+            {
+                var ins = Instantiate(ScoreRecord, GetComponentInParent<Transform>(), false);
+                recs.Add(ins);
+                ins.GetComponent<ScoreRecordController>().SetText(el);
+            }
         }
     }
 }

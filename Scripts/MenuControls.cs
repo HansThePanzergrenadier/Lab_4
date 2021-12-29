@@ -9,15 +9,17 @@ public class MenuControls : MonoBehaviour
     public AudioMixer AM;
     public void StartButtonPressed()
     {
-        SceneManager.LoadScene("GameWorld");
+        SceneManager.LoadScene("GameWorld", LoadSceneMode.Single);
     }
 
     public void QuitButtonPressed()
     {
+        /*
         for (int i = 0; i < SceneManager.sceneCount; i++)
         {
             SceneManager.UnloadSceneAsync(0);
         }
+        */
         
         Application.Quit();
     }
